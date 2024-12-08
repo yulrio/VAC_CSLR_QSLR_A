@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [ -z "$2" ];then
+if [ -z "$2" ];theno
 echo "preprocess.sh <hypothesis-CTM-file> <tmp-cmt-file> <output-file>"
 exit 0
 fi
