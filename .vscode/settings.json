@@ -1,0 +1,19 @@
+{
+  "editor.fontSize": 17,
+  "window.zoomLevel": 0.5,
+  "workbench.colorTheme": "Tokyo Night Storm",
+  "workbench.iconTheme": "vscode-icons",
+  "terminal.integrated.fontSize": 16,
+  "debug.console.wordWrap": true,
+  "editor.formatOnSave": false,
+  "editor.formatOnPaste": true,
+  "editor.formatOnType": false,
+  "editor.tabSize": 2,
+  "editor.insertSpaces": true,
+  "editor.detectIndentation": true,
+  "terminal.integrated.defaultProfile.windows": "Command Prompt",
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  }
+}

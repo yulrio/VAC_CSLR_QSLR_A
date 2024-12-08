@@ -1,0 +1,4 @@
+dataset_root: ./dataset/QSLR2024
+dict_path: ./preprocess/QSLR2024/gloss_dict.npy
+evaluation_dir: ./evaluation/slr_eval
+evaluation_prefix: QSLR2024-groundtruth
