@@ -1,7 +1,7 @@
 {
   "editor.fontSize": 17,
   "window.zoomLevel": 0.5,
-  "workbench.colorTheme": "Tokyo Night Storm",
+  "workbench.colorTheme": "Default Dark Modern",
   "workbench.iconTheme": "vscode-icons",
   "terminal.integrated.fontSize": 16,
   "debug.console.wordWrap": true,
