@@ -149,15 +149,16 @@ class SLRModel(nn.Module):
         return mobilenet
 
     def _modify_squeezenet(self, squeezenet):
-        # Pooling untuk mengurangi dimensi spasial
+        # Pooling untuk memastikan dimensi spasial tetap
         squeezenet.features = nn.Sequential(
             *squeezenet.features,
-            nn.AdaptiveAvgPool2d((1, 1))
+            nn.AdaptiveAvgPool2d((1, 1))  # Output spasial menjadi (1, 1)
         )
-        # Linear layer untuk menyesuaikan jumlah channel
+        # Linear layer untuk menyesuaikan jumlah channel output
         squeezenet.classifier = nn.Sequential(
-            nn.Flatten(),
-            nn.Linear(1000, 512),  # Sesuaikan output ke 512 channel
+            nn.Flatten(),  # Mengubah [Batch, C, 1, 1] menjadi [Batch, C]
+            nn.Linear(512, 512),  # Atur output ke 512 channels
             nn.ReLU(inplace=True)
         )
         return squeezenet
+
