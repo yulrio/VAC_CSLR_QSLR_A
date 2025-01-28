@@ -47,6 +47,8 @@ class SLRModel(nn.Module):
         # Handle MobileNetV2 specific output channels
         if c2d_type == "mobilenet_v2":
             self.conv2d = self._modify_mobilenet(self.conv2d)
+        elif c2d_type == "squeezenet1_1":
+            self.conv2d = self._modify_squeezenet(self.conv2d)
         else:  # Default case for ResNet
             self.conv2d.fc = Identity()
 
