@@ -55,6 +55,8 @@ class SLRModel(nn.Module):
             self.conv2d = self._modify_mobilenet(self.conv2d)
         elif c2d_type == "squeezenet1_1":
             self.conv2d = self._modify_squeezenet(self.conv2d)
+        elif c2d_type == "efficientnet_b1":
+            self.conv2d = self._modify_efficientnet(self.conv2d)
         else:  # Default case for ResNet
             self.conv2d.fc = Identity()
 
@@ -167,4 +169,19 @@ class SLRModel(nn.Module):
             nn.ReLU(inplace=True)
         )
         return squeezenet
+    
+    def _modify_efficientnet(self, efficientnet):
+        # Pooling untuk mengurangi dimensi spasial ke (1, 1)
+        efficientnet.features = nn.Sequential(
+            *efficientnet.features,
+            nn.AdaptiveAvgPool2d((1, 1))  # Mengubah dimensi spasial menjadi (1, 1)
+        )
+        # Linear layer untuk menyesuaikan jumlah channel
+        efficientnet.classifier = nn.Sequential(
+            nn.Flatten(),  # Mengubah [Batch, C, 1, 1] menjadi [Batch, C]
+            nn.Linear(1280, 512),  # Sesuaikan output dari 1280 menjadi 512 channels
+            nn.ReLU(inplace=True)
+        )
+        return efficientnet
+
 
