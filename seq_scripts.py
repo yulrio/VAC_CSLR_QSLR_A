@@ -40,7 +40,7 @@ def seq_train(loader, model, optimizer, device, epoch_idx, recoder):
 
 
 def seq_eval(cfg, loader, model, device, mode, epoch, work_dir, recoder,
-             evaluate_tool="python"):
+                evaluate_tool="python"):
     model.eval()
     total_sent = []
     total_info = []
@@ -62,7 +62,7 @@ def seq_eval(cfg, loader, model, device, mode, epoch, work_dir, recoder,
         python_eval = True if evaluate_tool == "python" else False
         write2file(work_dir + "out.output-hypothesis-{}.ctm".format(mode), total_info, total_sent)
         write2file(work_dir + "out.output-hypothesis-{}-conv.ctm".format(mode), total_info,
-                   total_conv_sent)
+                    total_conv_sent)
         conv_ret = evaluate(
             prefix=work_dir, mode=mode, output_file="output-hypothesis-{}-conv.ctm".format(mode),
             evaluate_dir=cfg.dataset_info['evaluation_dir'],
@@ -93,7 +93,7 @@ def seq_feature_generation(loader, model, device, mode, work_dir, recoder):
     src_path = os.path.abspath(f"{work_dir}{mode}")
     tgt_path = os.path.abspath(f"./features/{mode}")
     if not os.path.exists("./features/"):
-    	os.makedirs("./features/")
+        os.makedirs("./features/")
 
     if os.path.islink(tgt_path):
         curr_path = os.readlink(tgt_path)

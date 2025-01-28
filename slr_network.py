@@ -9,6 +9,8 @@ import torch.nn.functional as F
 import torchvision.models as models
 from modules.criterions import SeqKD
 from modules import BiLSTMLayer, TemporalConv
+from torchvision.models import get_model_weights
+
 
 
 class Identity(nn.Module):
@@ -42,7 +44,11 @@ class SLRModel(nn.Module):
         self.criterion_init()
         self.num_classes = num_classes
         self.loss_weights = loss_weights
-        self.conv2d = getattr(models, c2d_type)(pretrained=True)
+
+        weights_enum = get_model_weights(c2d_type)
+        weights = weights_enum.DEFAULT if weights_enum else None
+        # self.conv2d = getattr(models, c2d_type)(pretrained=True)
+        self.conv2d = getattr(models, c2d_type)(weights=weights)
 
         # Handle MobileNetV2 specific output channels
         if c2d_type == "mobilenet_v2":
