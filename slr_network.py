@@ -43,15 +43,21 @@ class SLRModel(nn.Module):
         self.num_classes = num_classes
         self.loss_weights = loss_weights
         self.conv2d = getattr(models, c2d_type)(pretrained=True)
-        self.conv2d.fc = Identity()
+
+        # Handle MobileNetV2 specific output channels
+        if c2d_type == "mobilenet_v2":
+            self.conv2d = self._modify_mobilenet(self.conv2d)
+        else:  # Default case for ResNet
+            self.conv2d.fc = Identity()
+
         self.conv1d = TemporalConv(input_size=512,
-                                   hidden_size=hidden_size,
-                                   conv_type=conv_type,
-                                   use_bn=use_bn,
-                                   num_classes=num_classes)
+                                    hidden_size=hidden_size,
+                                    conv_type=conv_type,
+                                    use_bn=use_bn,
+                                    num_classes=num_classes)
         self.decoder = utils.Decode(gloss_dict, num_classes, 'beam')
         self.temporal_model = BiLSTMLayer(rnn_type='LSTM', input_size=hidden_size, hidden_size=hidden_size,
-                                          num_layers=2, bidirectional=True)
+                                            num_layers=2, bidirectional=True)
         if weight_norm:
             self.classifier = NormLinear(hidden_size, self.num_classes)
             self.conv1d.fc = NormLinear(hidden_size, self.num_classes)
@@ -73,7 +79,7 @@ class SLRModel(nn.Module):
         x = torch.cat([inputs[len_x[0] * idx:len_x[0] * idx + lgt] for idx, lgt in enumerate(len_x)])
         x = self.conv2d(x)
         x = torch.cat([pad(x[sum(len_x[:idx]):sum(len_x[:idx + 1])], len_x[0])
-                       for idx, lgt in enumerate(len_x)])
+                        for idx, lgt in enumerate(len_x)])
         return x
 
     def forward(self, x, len_x, label=None, label_lgt=None):
@@ -113,19 +119,29 @@ class SLRModel(nn.Module):
         for k, weight in self.loss_weights.items():
             if k == 'ConvCTC':
                 loss += weight * self.loss['CTCLoss'](ret_dict["conv_logits"].log_softmax(-1),
-                                                      label.cpu().int(), ret_dict["feat_len"].cpu().int(),
-                                                      label_lgt.cpu().int()).mean()
+                                                        label.cpu().int(), ret_dict["feat_len"].cpu().int(),
+                                                        label_lgt.cpu().int()).mean()
             elif k == 'SeqCTC':
                 loss += weight * self.loss['CTCLoss'](ret_dict["sequence_logits"].log_softmax(-1),
-                                                      label.cpu().int(), ret_dict["feat_len"].cpu().int(),
-                                                      label_lgt.cpu().int()).mean()
+                                                        label.cpu().int(), ret_dict["feat_len"].cpu().int(),
+                                                        label_lgt.cpu().int()).mean()
             elif k == 'Dist':
                 loss += weight * self.loss['distillation'](ret_dict["conv_logits"],
-                                                           ret_dict["sequence_logits"].detach(),
-                                                           use_blank=False)
+                                                            ret_dict["sequence_logits"].detach(),
+                                                            use_blank=False)
         return loss
 
     def criterion_init(self):
         self.loss['CTCLoss'] = torch.nn.CTCLoss(reduction='none', zero_infinity=False)
         self.loss['distillation'] = SeqKD(T=8)
         return self.loss
+
+    def _modify_mobilenet(self, mobilenet):
+        # Replace mobilenet's classifier to output 512 channels
+        mobilenet.features = nn.Sequential(*mobilenet.features, nn.AdaptiveAvgPool2d((1, 1)))
+        mobilenet.classifier = nn.Sequential(
+            nn.Flatten(),
+            nn.Linear(1280, 512),  # Reduce output to 512 channels
+            nn.ReLU(inplace=True)
+        )
+        return mobilenet
