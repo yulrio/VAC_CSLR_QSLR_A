@@ -42,10 +42,10 @@ class Processor():
                 eval_model = epoch % self.arg.eval_interval == 0
                 # train end2end model
                 seq_train(self.data_loader['train'], self.model, self.optimizer,
-                          self.device, epoch, self.recoder)
+                            self.device, epoch, self.recoder)
                 if eval_model:
                     dev_wer = seq_eval(self.arg, self.data_loader['dev'], self.model, self.device,
-                                       'dev', epoch, self.arg.work_dir, self.recoder, self.arg.evaluate_tool)
+                                        'dev', epoch, self.arg.work_dir, self.recoder, self.arg.evaluate_tool)
                     self.recoder.print_log("Dev WER: {:05.2f}%".format(dev_wer))
                 if save_model:
                     model_path = "{}dev_{:05.2f}_epoch{}_model.pt".format(self.arg.work_dir, dev_wer, epoch)
@@ -60,7 +60,7 @@ class Processor():
             # train_wer = seq_eval(self.arg, self.data_loader["train_eval"], self.model, self.device,
             #                      "train", 6667, self.arg.work_dir, self.recoder, self.arg.evaluate_tool)
             dev_wer = seq_eval(self.arg, self.data_loader["dev"], self.model, self.device,
-                               "dev", 6667, self.arg.work_dir, self.recoder, self.arg.evaluate_tool)
+                                "dev", 6667, self.arg.work_dir, self.recoder, self.arg.evaluate_tool)
             test_wer = seq_eval(self.arg, self.data_loader["test"], self.model, self.device,
                                 "test", 6667, self.arg.work_dir, self.recoder, self.arg.evaluate_tool)
             self.recoder.print_log('Evaluation Done.\n')
