@@ -195,12 +195,12 @@ class SLRModel(nn.Module):
         return efficientnet
     
     def _modify_googlenet(self, googlenet):
-        # Pooling untuk memastikan dimensi spasial tetap
-        googlenet.features = nn.Sequential(
-            *googlenet.features,
-            nn.AdaptiveAvgPool2d((1, 1))  # Output spasial menjadi (1, 1)
-        )
-
+        # GoogLeNet memiliki fitur akhir dengan output 1024 channels
+        googlenet.fc = nn.Identity()  # Hilangkan classifier bawaan
+        
+        # Gunakan AdaptiveAvgPool2d untuk memastikan output spasial (1,1)
+        googlenet.avgpool = nn.AdaptiveAvgPool2d((1, 1))
+        
         # Tambahkan layer Linear untuk menyesuaikan output ke 512 channels
         googlenet.fc = nn.Sequential(
             nn.Flatten(),
