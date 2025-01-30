@@ -60,8 +60,9 @@ class SLRModel(nn.Module):
             self.conv2d = self._modify_squeezenet(self.conv2d)
         if c2d_type == "efficientnet_b1":
             self.conv2d = self._modify_efficientnet(self.conv2d)
+        if c2d_type == "googlenet":
+            self.conv2d = self._modify_googlenet(self.conv2d)
         
-
         self.conv1d = TemporalConv(input_size=512,
                                     hidden_size=hidden_size,
                                     conv_type=conv_type,
@@ -192,5 +193,20 @@ class SLRModel(nn.Module):
             nn.ReLU(inplace=True)
         )
         return efficientnet
+    
+    def _modify_googlenet(self, googlenet):
+        # Pooling untuk memastikan dimensi spasial tetap
+        googlenet.features = nn.Sequential(
+            *googlenet.features,
+            nn.AdaptiveAvgPool2d((1, 1))  # Output spasial menjadi (1, 1)
+        )
+
+        # Tambahkan layer Linear untuk menyesuaikan output ke 512 channels
+        googlenet.fc = nn.Sequential(
+            nn.Flatten(),
+            nn.Linear(1024, 512),  # Ubah output dari 1024 → 512
+            nn.ReLU(inplace=True)
+        )
+        return googlenet
 
 
