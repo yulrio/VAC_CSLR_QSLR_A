@@ -148,7 +148,7 @@ class SLRModel(nn.Module):
         self.loss['distillation'] = SeqKD(T=8)
         return self.loss
 
-    def _modify_mobilenet(self, mobilenet):
+    def _modify_mobilenet(self, mobilenet, c2d_type):
         mobilenet.features = nn.Sequential(*mobilenet.features, nn.AdaptiveAvgPool2d((1, 1)))
         if c2d_type == "mobilenet_v3_small":
             in_features = 576
