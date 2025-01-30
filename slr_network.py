@@ -51,14 +51,16 @@ class SLRModel(nn.Module):
         self.conv2d = getattr(models, c2d_type)(weights=weights)
 
         # Handle MobileNetV2 specific output channels
-        if c2d_type == "mobilenet_v2":
-            self.conv2d = self._modify_mobilenet(self.conv2d)
-        elif c2d_type == "squeezenet1_1":
-            self.conv2d = self._modify_squeezenet(self.conv2d)
-        elif c2d_type == "efficientnet_b1":
-            self.conv2d = self._modify_efficientnet(self.conv2d)
+        if c2d_type in ["mobilenet_v2", "mobilenet_v3_small"]:
+            self.conv2d = self._modify_mobilenet(self.conv2d, c2d_type)
         else:  # Default case for ResNet
             self.conv2d.fc = Identity()
+
+        if c2d_type == "squeezenet1_1":
+            self.conv2d = self._modify_squeezenet(self.conv2d)
+        if c2d_type == "efficientnet_b1":
+            self.conv2d = self._modify_efficientnet(self.conv2d)
+        
 
         self.conv1d = TemporalConv(input_size=512,
                                     hidden_size=hidden_size,
@@ -147,11 +149,18 @@ class SLRModel(nn.Module):
         return self.loss
 
     def _modify_mobilenet(self, mobilenet):
-        # Replace mobilenet's classifier to output 512 channels
         mobilenet.features = nn.Sequential(*mobilenet.features, nn.AdaptiveAvgPool2d((1, 1)))
+        if c2d_type == "mobilenet_v3_small":
+            in_features = 576
+        elif c2d_type == "mobilenet_v3_large":
+            in_features = 960
+        else:
+            in_features = 1280
+
+        # Replace mobilenet's classifier to output 512 channels
         mobilenet.classifier = nn.Sequential(
             nn.Flatten(),
-            nn.Linear(1280, 512),  # Reduce output to 512 channels
+            nn.Linear(in_features, 512),  # Reduce output to 512 channels
             nn.ReLU(inplace=True)
         )
         return mobilenet
