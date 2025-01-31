@@ -62,6 +62,8 @@ class SLRModel(nn.Module):
             self.conv2d = self._modify_efficientnet(self.conv2d)
         if c2d_type == "googlenet":
             self.conv2d = self._modify_googlenet(self.conv2d)
+        if c2d_type == "vgg16_bn":
+            self.conv2d = self._modify_vgg16(self.conv2d)
         
         self.conv1d = TemporalConv(input_size=512,
                                     hidden_size=hidden_size,
@@ -208,5 +210,25 @@ class SLRModel(nn.Module):
             nn.ReLU(inplace=True)
         )
         return googlenet
+
+    def _modify_vgg16(self, vgg):
+        # Pastikan hanya mengambil fitur tanpa classifier bawaan
+        vgg.classifier = nn.Identity()
+
+        # Tambahkan AdaptiveAvgPool2d agar output spasial selalu (1,1)
+        vgg.features = nn.Sequential(
+            *vgg.features,
+            nn.AdaptiveAvgPool2d((1, 1))
+        )
+
+        # Tambahkan layer linear untuk mengubah output ke 512 channels
+        vgg.classifier = nn.Sequential(
+            nn.Flatten(),
+            nn.Linear(512, 512),  # Pastikan output tetap 512 channels
+            nn.ReLU(inplace=True)
+        )
+
+        return vgg
+
 
 
