@@ -224,7 +224,7 @@ class SLRModel(nn.Module):
         # Tambahkan layer linear untuk mengubah output ke 512 channels
         vgg.classifier = nn.Sequential(
             nn.Flatten(),
-            nn.Linear(512, 512),  # Pastikan output tetap 512 channels
+            nn.Linear(25088, 512),  # Pastikan output tetap 512 channels
             nn.ReLU(inplace=True)
         )
 
