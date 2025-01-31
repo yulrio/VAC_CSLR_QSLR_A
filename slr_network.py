@@ -64,6 +64,8 @@ class SLRModel(nn.Module):
             self.conv2d = self._modify_googlenet(self.conv2d)
         if c2d_type == "vgg16_bn":
             self.conv2d = self._modify_vgg16(self.conv2d)
+        if c2d_type == "shufflenet_v2_x1_0":
+            self.conv2d = self._modify_shufflenet(self.conv2d)
         
         self.conv1d = TemporalConv(input_size=512,
                                     hidden_size=hidden_size,
@@ -229,6 +231,26 @@ class SLRModel(nn.Module):
         )
 
         return vgg
+
+    def _modify_shufflenet(self, shufflenet):
+        # Hapus classifier bawaan (fully connected layer terakhir)
+        shufflenet.fc = nn.Identity()
+        
+        # Gunakan AdaptiveAvgPool2d agar ukuran spasial tetap (1,1)
+        shufflenet.conv5 = nn.Sequential(
+            *shufflenet.conv5,
+            nn.AdaptiveAvgPool2d((1, 1))  # Output akan menjadi [Batch, 1024, 1, 1]
+        )
+
+        # Tambahkan linear layer untuk mengubah output dari 1024 ke 512
+        shufflenet.fc = nn.Sequential(
+            nn.Flatten(),         # Ubah [Batch, 1024, 1, 1] menjadi [Batch, 1024]
+            nn.Linear(1024, 512), # Ubah dari 1024 → 512 agar cocok dengan conv1d
+            nn.ReLU(inplace=True)
+        )
+
+        return shufflenet
+
 
 
 
