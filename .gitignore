@@ -5,3 +5,4 @@ code.txt
 /dataset/QSLR2024
 README_OLD.md
 __pycache__
+*.pyc
